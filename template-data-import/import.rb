@@ -32,7 +32,7 @@ end
 def to_element sheet, row, column, org_unit_id
   element = {
     'orgUnit' => org_unit_id,
-    'dataElement' => sheet.cell(2, column),
+    'dataElement' => sheet.cell(2, 3),
     'value' => sheet.cell(row, column),
     'period' => sheet.cell(5, column).to_s,
     'followUp' => false
