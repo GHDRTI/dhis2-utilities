@@ -39,6 +39,10 @@ def to_element sheet, row, column, org_unit_id
   }
   cat = sheet.cell(4, column) 
   element['categoryOptionCombo'] = cat unless cat.nil? || (cat.is_a?(String) && cat.empty?)
+  
+  attribute = sheet.cell(2, 8)
+  element['attrOptionCombo'] = attribute unless attribute.nil? || (attribute.is_a?(String) && attribute.empty?)
+
   return element
 end
 
