@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'roo'
 require 'roo-xls'
 require 'optparse'
