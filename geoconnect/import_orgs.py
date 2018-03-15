@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 import requests
 import os
 import pandas as pd
-import io
 import numpy as np
 
 parser = argparse.ArgumentParser()
@@ -25,7 +24,7 @@ dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 API_KEY = os.environ.get("API_KEY")
 
-# Get data from API
+# Get data from Geoconect API
 
 s = requests.session()
 counter = 1
@@ -46,18 +45,41 @@ while True:
 orgunits = pd.concat(results)
 
 
-
 # Build out the org heirarchy for DHIS2
-
-counter = 1
+org_counter = 1
 export = []
-regions = np.unique(orgunits[['admin1']].values)
+regions = np.unique(orgunits['admin1'].values)
 for region in regions:
-    row = {"name": region, "uid":"ORG"+'%08d' % counter, "parent": ADMIN0_UID}
+
+    region_uid = "ORG" + '%08d' % org_counter
+    row = {"name": region, "uid": region_uid, "parent": ADMIN0_UID}
     export.append(row)
-    counter = counter + 1
+    org_counter = org_counter + 1
 
+    admin1_df = orgunits[orgunits['admin1'] == region]
+    admin1_df = admin1_df.loc[admin1_df['admin2'].notnull()]
+    districts = np.unique(admin1_df[['admin2']].values)
 
+    # loop through each of the admin2s for each admin1
+
+    for district in districts:
+
+        district_uid = "ORG" + '%08d' % org_counter
+        row = {"name": district, "uid": district_uid, "parent": region_uid}
+        export.append(row)
+        org_counter = org_counter + 1
+
+        # loop through each of the admin3s for each admin2
+        admin2_df = orgunits[orgunits['admin2'] == district]
+
+        admin2_df = admin2_df.loc[admin2_df['admin3'].notnull()]
+        subdistricts = np.unique(admin2_df[['admin3']].values)
+
+        for subdistrict in subdistricts:
+            subdistrict_uid = "ORG" + '%08d' % org_counter
+            row = {"name": subdistrict, "uid": subdistrict_uid, "parent": district_uid}
+            export.append(row)
+            org_counter = org_counter + 1
 
 # Export to a CSV like this: name,uid,code,parent
 print("name,uid,code,parent")
